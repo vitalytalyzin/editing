@@ -1,16 +1,23 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { changeServiceField, removeService } from '../../actions/actionCreators';
+import { changeServiceField, removeService, clearServiceField } from '../../actions/actionCreators';
 
-function ServiceList() {
-  const items = useSelector(state => state.serviceList);
+const ServiceList = () => {
+  const items = useSelector(({ serviceList }) => serviceList);
+  const { filterName } = useSelector(({ serviceFilter }) => serviceFilter);
   const dispatch = useDispatch();
+
+  const filteredItems = items.filter(({ name, price }) => {
+    const currentName = name.toLowerCase();
+    const currentPrice = String(price).toLowerCase();
+    const currentFilterName = filterName.toLowerCase();
+
+    return currentName.includes(currentFilterName) || currentPrice.includes(currentFilterName);
+  });
 
   const handleRemove = id => {
     dispatch(removeService(id));
-    dispatch(changeServiceField('name', ''));
-    dispatch(changeServiceField('price', ''));
-    dispatch(changeServiceField('id', ''));
+    dispatch(clearServiceField());
   };
 
   const handleChange = (name, value, id) => {
@@ -21,7 +28,7 @@ function ServiceList() {
 
   return (
     <ul>
-      {items.map(item => (
+      {filteredItems.map(item => (
         <li key={item.id}>
           {item.name} {item.price}
           <button onClick={() => handleChange(item.name, item.price, item.id)}>change</button>
@@ -30,6 +37,6 @@ function ServiceList() {
       ))}
     </ul>
   );
-}
+};
 
 export default ServiceList;
